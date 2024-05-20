@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "22:24"
+      timezone: "Asia/Singapore"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "OpenTelemetry*"
+    groups:
+      nuget-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
