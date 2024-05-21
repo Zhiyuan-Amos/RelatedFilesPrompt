@@ -1,0 +1,46 @@
+name: Related Files Checker
+
+on: pull_request
+
+jobs:
+  related-files-checker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Enable auto-merge for Dependabot PRs involving non-major updates
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          # Step 1: Read the contents of a JSON file in a GitHub repository
+          json_content=$(cat ./data.json)
+          
+          # Step 2: Get the list of changed files in the Pull Request belonging to the same GitHub Repository
+          changed_files=$(gh pr diff --name-only "$PR_URL")
+          
+          # Step 3: Iterate through the list and store messages into an array
+          declare -a messages
+          for file in $changed_files; do
+              # Check if the changed file matches any of the values of the JSON file `file` property
+              if echo "$json_content" | jq -e --arg file "$file" '.[] | select(.file == $file)' >/dev/null; then
+                  # Get the message for the matched file
+                  message=$(echo "$json_content" | jq -r --arg file "$file" '.[] | select(.file == $file) | .message')
+                  messages+=("$message")
+              fi
+          done
+          
+          # Step 4: Use a GitHub bot to output the stored messages as a GitHub Pull Request comment
+          if [ ${#messages[@]} -gt 0 ]; then
+              comment=$(printf "%s\n" "${messages[@]}")
+              gh pr comment "$PR_URL" --body "$comment"
+          fi
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
