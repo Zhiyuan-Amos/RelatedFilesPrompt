@@ -9,28 +9,28 @@ runs:
   using: 'composite'
   steps:
     - name: Enable auto-merge for Dependabot PRs involving non-major updates
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Step 1: Read the contents of a JSON file in a GitHub repository
-          json_content=$(cat ${{ inputs.related-files-file-path }})
-          
-          # Step 2: Get the list of changed files in the Pull Request belonging to the same GitHub Repository
-          changed_files=$(gh pr diff --name-only "${{ inputs.pull-request-url }}")
-          
-          # Step 3: Iterate through the list and store messages into an array
-          declare -a messages
-          for file in $changed_files; do
-              # Check if the changed file matches any of the values of the JSON file `file` property
-              if echo "$json_content" | jq -e --arg file "$file" '.[] | select(.file == $file)' >/dev/null; then
-                  # Get the message for the matched file
-                  message=$(echo "$json_content" | jq -r --arg file "$file" '.[] | select(.file == $file) | .message')
-                  messages+=("$message")
-              fi
-          done
-          
-          # Step 4: Use a GitHub bot to output the stored messages as a GitHub Pull Request comment
-          if [ ${#messages[@]} -gt 0 ]; then
-              comment=$(printf "%s\n" "${messages[@]}")
-              gh pr comment "${{ inputs.pull-request-url }}" --body "$comment"
-          fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Step 1: Read the contents of a JSON file in a GitHub repository
+        json_content=$(cat ${{ inputs.related-files-file-path }})
+        
+        # Step 2: Get the list of changed files in the Pull Request belonging to the same GitHub Repository
+        changed_files=$(gh pr diff --name-only "${{ inputs.pull-request-url }}")
+        
+        # Step 3: Iterate through the list and store messages into an array
+        declare -a messages
+        for file in $changed_files; do
+            # Check if the changed file matches any of the values of the JSON file `file` property
+            if echo "$json_content" | jq -e --arg file "$file" '.[] | select(.file == $file)' >/dev/null; then
+                # Get the message for the matched file
+                message=$(echo "$json_content" | jq -r --arg file "$file" '.[] | select(.file == $file) | .message')
+                messages+=("$message")
+            fi
+        done
+        
+        # Step 4: Use a GitHub bot to output the stored messages as a GitHub Pull Request comment
+        if [ ${#messages[@]} -gt 0 ]; then
+            comment=$(printf "%s\n" "${messages[@]}")
+            gh pr comment "${{ inputs.pull-request-url }}" --body "$comment"
+        fi
