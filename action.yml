@@ -10,7 +10,6 @@ runs:
   steps:
     - name: Enable auto-merge for Dependabot PRs involving non-major updates
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Step 1: Read the contents of a JSON file in a GitHub repository
