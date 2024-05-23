@@ -5,12 +5,14 @@ inputs:
     required: true
   pull-request-url:
     required: true
+  github-token:
+    required: true
 runs:
   using: 'composite'
   steps:
     - name: Enable auto-merge for Dependabot PRs involving non-major updates
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         # Step 1: Read the contents of a JSON file in a GitHub repository
         json_content=$(cat ${{ inputs.related-files-file-path }})
