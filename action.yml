@@ -11,6 +11,7 @@ runs:
   using: 'composite'
   steps:
     - name: Enable auto-merge for Dependabot PRs involving non-major updates
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
